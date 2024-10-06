@@ -1,0 +1,46 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #008080;
+    padding: 20px;
+    text-align: center;
+    color: white;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+#dashboard {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.weather, .river-flow, .forecast {
+    border: 1px solid #ccc;
+    padding: 15px;
+    width: 30%;
+    background-color: #fff;
+}
+
+#forecast div {
+    margin-bottom: 10px;
+}

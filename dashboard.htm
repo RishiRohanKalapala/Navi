@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namami Gange Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        /* Custom SVG sizing */
+        .weather-card svg {
+            width: 50px;
+            height: 50px;
+        }
+        
+        /* Chart container */
+        .chart-container {
+            height: 300px;
+            width: 100%;
+        }
+        
+        .speedometer {
+            position: relative;
+            width: 100px; /* Width of the speedometer */
+            height: 100px; /* Height of the speedometer */
+            margin: 0 auto; /* Center the speedometer */
+        }
+
+        .gauge {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #e0e0e0; /* Background color */
+            overflow: hidden;
+        }
+
+        .arc {
+            position: absolute;
+            width: 200%; /* Double width for rotation effect */
+            height: 100%;
+            background-color: #ffffff; /* Background of the arc */
+            border-radius: 50%;
+            transform: rotate(90deg); /* Start from 0 degrees */
+        }
+
+        .fill {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: transparent; /* Color of the fill */
+            transition: transform 0.5s ease; /* Smooth transition */
+        }
+
+        .marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .high {
+            background-color: red; /* High Alert Color */
+        }
+
+        .moderate {
+            background-color: orange; /* Moderate Alert Color */
+        }
+
+        .severe {
+            background-color: darkred; /* Severe Alert Color */
+        }
+
+        .normal {
+            background-color: green; /* Normal Alert Color */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-blue-900 p-4 text-white flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="Add_a_heanavgangeding-removebg-preview.png" alt="Namami Gange" class="h-10 mr-2">
+            <h1 class="text-2xl">Namami Gange Dashboard</h1>
+        </div>
+        <nav class="space-x-4">
+            <a href="#river-flow" class="hover:underline font-bold">River Flow</a>
+            <a href="#weather-alerts" class="hover:underline font-bold">Weather Alerts</a>
+            <a href="#forecast" class="hover:underline font-bold">Forecast</a>
+        </nav>
+    </header>
+
+    <!-- Main content -->
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-1/5 bg-gray-200 p-4 h-screen">
+            <ul class="space-y-2">
+                <li><a href="#live-weather" class="block py-2 px-4 bg-blue-500 text-white rounded font-bold">Live Weather</a></li>
+                <li><a href="#river-flow" class="block py-2 px-4 bg-gray-300 hover:bg-gray-400 font-bold">River Flow</a></li>
+                <li><a href="#alerts" class="block py-2 px-4 bg-gray-300 hover:bg-gray-400 font-bold">Weather Alerts</a></li>
+                <li><a href="#forecast" class="block py-2 px-4 bg-gray-300 hover:bg-gray-400 font-bold">Forecast</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Dashboard -->
+        <main class="w-4/5 p-6">
+            <!-- River Flow Map -->
+            <section id="river-flow" class="bg-white p-6 rounded-lg shadow mb-6">
+                <h2 class="text-2xl font-semibold mb-4">River Flow Map: Ganga Basin and Tributaries</h2>
+                <div id="map"></div>
+            </section>
+
+            <!-- Weather Cards for Ganga Drainage Systems -->
+            <section id="weather-cards" class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-2xl font-semibold mb-4">Current Weather Conditions: Ganga Drainage Systems</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- Yamuna Weather Card -->
+                    <div class="weather-card bg-gray-100 p-4 rounded-lg shadow text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="mx-auto mb-2">
+                            <path d="M32 4a10 10 0 100 20h18a8 8 0 010 16H28a6 6 0 000 12h26a10 10 0 000-20H32a8 8 0 110-16h14a6 6 0 000-12H32z" fill="#3399FF"/>
+                        </svg>
+                        <h3 class="text-xl font-semibold">Yamuna Basin</h3>
+                        <p class="text-sm">Clear Sky - 25°C</p>
+                    </div>
+
+                    <!-- Ghaghara Weather Card -->
+                    <div class="weather-card bg-gray-100 p-4 rounded-lg shadow text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="mx-auto mb-2">
+                            <path d="M32 4a10 10 0 100 20h18a8 8 0 010 16H28a6 6 0 000 12h26a10 10 0 000-20H32a8 8 0 110-16h14a6 6 0 000-12H32z" fill="#FFAA00"/>
+                        </svg>
+                        <h3 class="text-xl font-semibold">Ghaghara Basin</h3>
+                        <p class="text-sm">Partly Cloudy - 27°C</p>
+                    </div>
+
+                    <!-- Gandak Weather Card -->
+                    <div class="weather-card bg-gray-100 p-4 rounded-lg shadow text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="mx-auto mb-2">
+                            <path d="M32 4a10 10 0 100 20h18a8 8 0 010 16H28a6 6 0 000 12h26a10 10 0 000-20H32a8 8 0 110-16h14a6 6 0 000-12H32z" fill="#00AAFF"/>
+                        </svg>
+                        <h3 class="text-xl font-semibold">Gandak Basin</h3>
+                        <p class="text-sm">Overcast - 23°C</p>
+                    </div>
+
+                    <!-- Kosi Weather Card -->
+                    <div class="weather-card bg-gray-100 p-4 rounded-lg shadow text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="mx-auto mb-2">
+                            <path d="M32 4a10 10 0 100 20h18a8 8 0 010 16H28a6 6 0 000 12h26a10 10 0 000-20H32a8 8 0 110-16h14a6 6 0 000-12H32z" fill="#FFD700"/>
+                        </svg>
+                        <h3 class="text-xl font-semibold">Kosi Basin</h3>
+                        <p class="text-sm">Sunny - 30°C</p>
+                    </div>
+
+                    <!-- Punpun Weather Card -->
+                    <div class="weather-card bg-gray-100 p-4 rounded-lg shadow text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="mx-auto mb-2">
+                            <path d="M32 4a10 10 0 100 20h18a8 8 0 010 16H28a6 6 0 000 12h26a10 10 0 000-20H32a8 8 0 110-16h14a6 6 0 000-12H32z" fill="#FF4500"/>
+                        </svg>
+                        <h3 class="text-xl font-semibold">Punpun Basin</h3>
+                        <p class="text-sm">Thunderstorm - 22°C</p>
+                    </div>
+
+                    <!-- Ganges Weather Card -->
+                    <div class="weather-card bg-gray-100 p-4 rounded-lg shadow text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="mx-auto mb-2">
+                            <path d="M32 4a10 10 0 100 20h18a8 8 0 010 16H28a6 6 0 000 12h26a10 10 0 000-20H32a8 8 0 110-16h14a6 6 0 000-12H32z" fill="#4B0082"/>
+                        </svg>
+                        <h3 class="text-xl font-semibold">Ganges Basin</h3>
+                        <p class="text-sm">Rainy - 24°C</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- River Flow and Rainfall Charts -->
+            <section id="charts" class="mt-6">
+                <h2 class="text-2xl font-semibold mb-4">River Flow and Rainfall Data</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- River Flow Chart -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-xl font-semibold mb-2">River Flow (m³/s)</h3>
+                        <canvas id="riverFlowChart" class="chart-container"></canvas>
+                    </div>
+
+                    <!-- Rainfall Chart -->
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-xl font-semibold mb-2">Rainfall (mm)</h3>
+                        <canvas id="rainfallChart" class="chart-container"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Map and Alerts -->
+           <!-- River Flow and Rainfall Charts -->
+<section id="alerts" class="mt-6">
+    <h2 class="text-2xl font-semibold mb-4">Weather Alerts</h2>
+    <div class="grid grid-cols-3 gap-4">
+        <!-- Speedometer for River Flow Alert -->
+        <div class="bg-white p-4 rounded-lg shadow text-center">
+            <h3 class="text-xl font-semibold mb-2">River Flow Alert</h3>
+            <canvas id="riverFlowAlert" class="chart-container"></canvas>
+            <p class="text-lg">Current Flow: 800 m³/s</p> <!-- Example data -->
+        </div>
+
+        <!-- Speedometer for Rainfall Alert -->
+        <div class="bg-white p-4 rounded-lg shadow text-center">
+            <h3 class="text-xl font-semibold mb-2">Rainfall Alert</h3>
+            <canvas id="rainfallAlert" class="chart-container"></canvas>
+            <p class="text-lg">Current Rainfall: 150 mm</p> <!-- Example data -->
+        </div>
+
+        <!-- Speedometer for Temperature Alert -->
+        <div class="bg-white p-4 rounded-lg shadow text-center">
+            <h3 class="text-xl font-semibold mb-2">Temperature Alert</h3>
+            <canvas id="temperatureAlert" class="chart-container"></canvas>
+            <p class="text-lg">Current Temperature: 24°C</p> <!-- Example data -->
+        </div>
+    </div>
+</section>
+
+
+            <!-- Footer -->
+            <footer class="mt-6 text-center">
+                <p class="text-gray-600">&copy; 2024 Namami Gange Initiative</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize Leaflet Map
+        const map = L.map('map').setView([30.7333, 78.0922], 6); // Set your desired coordinates and zoom level
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+
+        // River Flow Data
+        const riverFlowData = {
+            labels: ['Yamuna', 'Ghaghara', 'Gandak', 'Kosi', 'Punpun', 'Ganges'],
+            datasets: [{
+                label: 'River Flow (m³/s)',
+                data: [500, 700, 300, 600, 400, 800], // Example data
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Rainfall Data
+        const rainfallData = {
+            labels: ['Yamuna', 'Ghaghara', 'Gandak', 'Kosi', 'Punpun', 'Ganges'],
+            datasets: [{
+                label: 'Rainfall (mm)',
+                data: [120, 80, 150, 90, 70, 110], // Example data
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Initialize River Flow Chart
+        const riverFlowCtx = document.getElementById('riverFlowChart').getContext('2d');
+        const riverFlowChart = new Chart(riverFlowCtx, {
+            type: 'bar',
+            data: riverFlowData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Flow (m³/s)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize Rainfall Chart
+        const rainfallCtx = document.getElementById('rainfallChart').getContext('2d');
+        const rainfallChart = new Chart(rainfallCtx, {
+            type: 'line',
+            data: rainfallData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Rainfall (mm)'
+                        }
+                    }
+                }
+            }
+        });
+        // Speedometer Data
+const riverFlowAlertData = {
+    datasets: [{
+        data: [800, 200], // Example: 800 m³/s and remaining to 1000 m³/s
+        backgroundColor: ['#4B0082', '#e0e0e0'],
+        borderWidth: 0
+    }],
+    labels: ['Current Flow', 'Remaining']
+};
+
+const rainfallAlertData = {
+    datasets: [{
+        data: [150, 350], // Example: 150 mm and remaining to 500 mm
+        backgroundColor: ['#FF4500', '#e0e0e0'],
+        borderWidth: 0
+    }],
+    labels: ['Current Rainfall', 'Remaining']
+};
+
+const temperatureAlertData = {
+    datasets: [{
+        data: [24, 26], // Example: 24°C and remaining to 50°C
+        backgroundColor: ['#FFD700', '#e0e0e0'],
+        borderWidth: 0
+    }],
+    labels: ['Current Temperature', 'Remaining']
+};
+
+// Initialize River Flow Alert Speedometer
+const riverFlowAlertCtx = document.getElementById('riverFlowAlert').getContext('2d');
+const riverFlowAlert = new Chart(riverFlowAlertCtx, {
+    type: 'doughnut',
+    data: riverFlowAlertData,
+    options: {
+        responsive: true,
+        cutout: '70%',
+        plugins: {
+            tooltip: {
+                enabled: false // Disable tooltip for a cleaner look
+            }
+        }
+    }
+});
+
+// Initialize Rainfall Alert Speedometer
+const rainfallAlertCtx = document.getElementById('rainfallAlert').getContext('2d');
+const rainfallAlert = new Chart(rainfallAlertCtx, {
+    type: 'doughnut',
+    data: rainfallAlertData,
+    options: {
+        responsive: true,
+        cutout: '70%',
+        plugins: {
+            tooltip: {
+                enabled: false // Disable tooltip for a cleaner look
+            }
+        }
+    }
+});
+
+// Initialize Temperature Alert Speedometer
+const temperatureAlertCtx = document.getElementById('temperatureAlert').getContext('2d');
+const temperatureAlert = new Chart(temperatureAlertCtx, {
+    type: 'doughnut',
+    data: temperatureAlertData,
+    options: {
+        responsive: true,
+        cutout: '70%',
+        plugins: {
+            tooltip: {
+                enabled: false // Disable tooltip for a cleaner look
+            }
+        }
+    }
+});
+
+    </script>
+</body>
+</html>
